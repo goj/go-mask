@@ -1,3 +1,4 @@
+.PHONY: tags
 include $(GOROOT)/src/Make.inc
 
 TARG=bitmask
@@ -6,3 +7,6 @@ GOFILES=\
 		bitmask_template.go\
 
 include $(GOROOT)/src/Make.pkg
+
+tags:
+	gotags *.go > tags
