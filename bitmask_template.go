@@ -24,12 +24,12 @@ func (sc StringTemplate) Right() int  { return sc.x + sc.w - 1 }
 func (sc StringTemplate) Top() int    { return sc.y }
 func (sc StringTemplate) Bottom() int { return sc.y + sc.h - 1 }
 
-func MakeBitmask(bt BitmaskTemplate) Bitmask {
+func MakeBitmask(bt BitmaskTemplate) *Bitmask {
 	l, r := bt.Left(), bt.Right()
 	t, b := bt.Top(), bt.Bottom()
 	w := r - l + 1
 	h := b - t + 1
-	result := Bitmask{l, t, w, h, make([][]part, h)}
+	result := &Bitmask{l, t, w, h, make([][]part, h)}
 	for y := t; y <= b; y++ {
 		col := uint(0)
 		row := make([]part, w>>sft+1)

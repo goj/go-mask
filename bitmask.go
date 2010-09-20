@@ -37,9 +37,9 @@ func (b Bitmask) Format(f fmt.State, c int) {
     }
 }
 
-func (b1 Bitmask) Collides (b2 Bitmask) bool {
+func (b1 Bitmask) Collides (b2 *Bitmask) bool {
     dx, dy := b2.x - b1.x, b2.y - b1.y
-    if (dx < 0) {return b2.Collides(b1)}
+    if (dx < 0) {return b2.Collides(&b1)}
     miny, maxy := max(-dy, 0), min(b1.h - dy, b2.h)
     mini, maxi := max(-dx >> sft, 0), min((b1.w-dx) >> sft + 1, b2.w >> sft + 1)
     di, shift1, shift2 := part(dx >> sft), part(dx & msk), sz - part(dx & msk)
