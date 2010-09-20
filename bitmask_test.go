@@ -10,8 +10,12 @@ import (
 
 type exp_t map[int][]bool;
 
+func fromString(x, y, w, h int, str string) Bitmask {
+    return MakeBitmask(StringTemplate{x, y, w, h, str})
+}
+
 func TestAbsRelExplicitData(t *testing.T) {
-    bmsk := FromString(4, -3, 3, 3, ".#."+
+    bmsk := fromString(4, -3, 3, 3, ".#."+
                                     "#.#"+
                                     ".##")
     expectations := exp_t { // [y][x] -> t/f
@@ -25,8 +29,8 @@ func TestAbsRelExplicitData(t *testing.T) {
 }
 
 func TestCollidesEdgeCase(t *testing.T) {
-    b1 := FromString(0, 0, 65, 1, "................................................................#")
-    b2 := FromString(1, 0, 64, 1, "...............................................................#")
+    b1 := fromString(0, 0, 65, 1, "................................................................#")
+    b2 := fromString(1, 0, 64, 1, "...............................................................#")
     if !b1.Collides(b2) {
         t.Error(b1, b2)
     }
@@ -53,16 +57,17 @@ func TestCollides(t *testing.T) {
 
 func (b Bitmask) Generate(rand *rand.Rand, size int) reflect.Value {
     result := Bitmask {
-        X: size - rand.Intn(size),
-        Y: size - rand.Intn(size),
+        x: size - rand.Intn(size),
+        y: size - rand.Intn(size),
         w: rand.Intn(size),
         h: rand.Intn(size),
     }
     result.lines = make([][]part, result.h)
+    completeness := rand.Intn(size)
     for y := 0; y<result.h; y++ {
         result.lines[y] = make([]part, result.w / sz + 1)
         for x := 0; x < result.w; x++ {
-            result.SetRel(x, y, rand.Intn(size/4) == 0)
+            result.SetRel(x, y, rand.Intn(completeness) == 0)
         }
     }
 
@@ -72,8 +77,8 @@ func (b Bitmask) Generate(rand *rand.Rand, size int) reflect.Value {
 func doAbsRelTest(bmsk Bitmask, expectations exp_t, t *testing.T) {
     for y, yexpect := range expectations {
         for x, val := range yexpect {
-            if (val != bmsk.abs(x + bmsk.X, y + bmsk.Y)) {
-                t.Error(x + bmsk.X, y + bmsk.Y, bmsk, "abs should be", val)
+            if (val != bmsk.abs(x + bmsk.x, y + bmsk.y)) {
+                t.Error(x + bmsk.x, y + bmsk.y, bmsk, "abs should be", val)
             }
             if (val != bmsk.rel(x, y)) {
                 t.Error(x, y, bmsk, "rel should be", val)
@@ -85,15 +90,8 @@ func doAbsRelTest(bmsk Bitmask, expectations exp_t, t *testing.T) {
 func (b1 Bitmask) dumbCollides(b2 Bitmask) bool {
     for y := 0; y < b1.h; y++ {
         for x := 0; x < b1.w; x++ {
-            if b1.abs(b1.X + x, b1.Y + y) && b2.abs(b1.X + x, b1.Y + y) {
+            if b1.abs(b1.x + x, b1.y + y) && b2.abs(b1.x + x, b1.y + y) {
                 return true;
-            }
-        }
-        for y := 0; y < b2.h; y++ {
-            for x := 0; x < b2.w; x++ {
-                if b1.abs(b2.X + x, b2.Y + y) && b2.abs(b2.X + x, b2.Y + y) {
-                    return true;
-                }
             }
         }
     }
@@ -101,14 +99,14 @@ func (b1 Bitmask) dumbCollides(b2 Bitmask) bool {
 }
 
 func staticallyAssertBitmaskIsGenerator(t *testing.T) quick.Generator {
-    return FromString(0, 0, 1, 1, ".")
+    return fromString(0, 0, 1, 1, ".")
 }
 
 func testCollidesOneElem(collisionTest func(Bitmask, Bitmask)bool, t *testing.T) {
     f := func(b Bitmask) bool {
         for y := 0; y<b.h; y++ {
             for x := 0; x < b.w; x++ {
-                oneEl := FromString(b.X + x, b.Y + y, 1, 1, "#")
+                oneEl := fromString(b.x + x, b.y + y, 1, 1, "#")
                 if b.rel(x, y) != b.dumbCollides(oneEl) {
                     fmt.Printf("failed at %d, %d, %v %v:\n", x, y, b.rel(x, y),  b.dumbCollides(oneEl))
                     return false

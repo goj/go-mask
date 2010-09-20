@@ -8,24 +8,9 @@ const msk = sz-1
 const sft = 6 // sz = 1 << sft
 
 type Bitmask struct {
-    X, Y int
+    x, y int
     w, h int
     lines [][]part
-}
-
-func FromString(x, y, w, h int, str string) Bitmask {
-    result := Bitmask{x, y, w, h, make([][]part, h)}
-    for i, r := uint(0), 0; r<h; r++ {
-        row := make([]part, w >> sft + 1)
-        result.lines[r] = row
-        for c := 0; c < w; c++ {
-            if str[i] != '.' && str[i] != ' ' {
-                row[c >> sft] |= part(1 << uint(c & msk))
-            }
-            i++
-        }
-    }
-    return result
 }
 
 func (b Bitmask) SetRel(x, y int, val bool) {
@@ -39,7 +24,7 @@ func (b Bitmask) SetRel(x, y int, val bool) {
 }
 
 func (b Bitmask) Format(f fmt.State, c int) {
-    fmt.Fprintf(f, "\nBM+(%d, %d):\n", b.X, b.Y)
+    fmt.Fprintf(f, "\nBM+(%d, %d):\n", b.x, b.y)
     for y := 0; y<b.h; y++ {
         for x := 0; x < b.w; x++ {
             if b.rel(x, y) {
@@ -53,7 +38,7 @@ func (b Bitmask) Format(f fmt.State, c int) {
 }
 
 func (b1 Bitmask) Collides (b2 Bitmask) bool {
-    dx, dy := b2.X - b1.X, b2.Y - b1.Y
+    dx, dy := b2.x - b1.x, b2.y - b1.y
     if (dx < 0) {return b2.Collides(b1)}
     miny, maxy := max(-dy, 0), min(b1.h - dy, b2.h)
     mini, maxi := max(-dx >> sft, 0), min((b1.w-dx) >> sft + 1, b2.w >> sft + 1)
@@ -86,7 +71,7 @@ func min(a, b int) int {
 // private functions for testing - don't have to be fast
 
 func (b Bitmask) abs(x, y int) bool {
-    return b.rel(x - b.X, y - b.Y)
+    return b.rel(x - b.x, y - b.y)
 }
 
 func (b Bitmask) rel(x, y int) bool {
