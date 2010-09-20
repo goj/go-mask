@@ -1,5 +1,9 @@
 package bitmask
 
+import (
+        "image"
+)
+
 type BitmaskTemplate interface {
 	CollidesAbs(x, y int) bool
 	Left() int
@@ -19,10 +23,24 @@ func (sc StringTemplate) CollidesAbs(x, y int) bool {
 	return idx >= 0 && idx < len(sc.str) && sc.str[idx] != ' ' && sc.str[idx] != '.'
 }
 
-func (sc StringTemplate) Left() int   { return sc.x }
-func (sc StringTemplate) Right() int  { return sc.x + sc.w - 1 }
-func (sc StringTemplate) Top() int    { return sc.y }
+func (sc StringTemplate) Left()   int { return sc.x }
+func (sc StringTemplate) Right()  int { return sc.x + sc.w - 1 }
+func (sc StringTemplate) Top()    int { return sc.y }
 func (sc StringTemplate) Bottom() int { return sc.y + sc.h - 1 }
+
+type ImageTemplate struct {
+    image.Image
+}
+
+func (img ImageTemplate) CollidesAbs(x, y int) bool {
+    _, _, _, a := img.At(x, y).RGBA()
+    return a != 0
+}
+
+func (img ImageTemplate) Left()   int {return img.Bounds().Min.X}
+func (img ImageTemplate) Right()  int {return img.Bounds().Max.X - 1}
+func (img ImageTemplate) Top()    int {return img.Bounds().Min.Y}
+func (img ImageTemplate) Bottom() int {return img.Bounds().Max.Y - 1}
 
 func MakeBitmask(bt BitmaskTemplate) *Bitmask {
 	l, r := bt.Left(), bt.Right()
